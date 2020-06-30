@@ -1,0 +1,13 @@
+server:
+  name: go_service_pre
+  port: 8080
+  router:
+    context_path: /gateway
+logPath: '/root/ggateway/logs/'
+nacos:
+  discovery:
+    ip: 192.168.23.178
+    port: 8848
+  config:
+    ip: 192.168.23.178
+    port: 8848
