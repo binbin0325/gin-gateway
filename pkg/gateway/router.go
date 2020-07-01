@@ -107,6 +107,16 @@ func (v *Router) proxy(c *gin.Context) {
 		req.URL.Scheme = "http"
 		req.URL.Host = host
 		req.URL.Path = c.Request.URL.Path
+		targetQuery:=c.Request.URL.RawQuery
+		if targetQuery == "" || req.URL.RawQuery == "" {
+			req.URL.RawQuery = targetQuery + req.URL.RawQuery
+		} else {
+			req.URL.RawQuery = targetQuery + "&" + req.URL.RawQuery
+		}
+		if _, ok := req.Header["User-Agent"]; !ok {
+			// explicitly disable User-Agent so it's not set to default value
+			req.Header.Set("User-Agent", "")
+		}
 	}
 	proxy := &httputil.ReverseProxy{Director: director}
 	proxy.ServeHTTP(c.Writer, c.Request)
