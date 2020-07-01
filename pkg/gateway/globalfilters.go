@@ -2,7 +2,9 @@ package gateway
 
 import (
 	"github.com/gin-gonic/gin"
+	"regexp"
 	"sort"
+	"strings"
 )
 
 type HandlerOrderFunc struct {
@@ -21,6 +23,17 @@ func contextPathStripPrefixGlobalFilter() gin.HandlerFunc {
 		c.Request.URL.Path = c.Request.URL.Path[len(contextPath):]
 	}
 }
+var regexpVersion *regexp.Regexp
+func versionStripPrefixGlobalFilter() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		versionRegxp := regexpVersion.FindStringSubmatch(c.Request.URL.Path)
+		if len(versionRegxp) > 0 {
+			if index := strings.Index(c.Request.URL.Path, versionRegxp[0]); index > 0 {
+				c.Request.URL.Path = c.Request.URL.Path[index:]
+			}
+		}
+	}
+}
 
 func (globalFilter HandlerOrderFunc) Use() {
 	globalFilters = append(globalFilters, globalFilter)
@@ -32,8 +45,8 @@ func loadGlobalFilters()  {
 		FilterFunc: contextPathStripPrefixGlobalFilter(),
 	}.Use()
 	HandlerOrderFunc{
-		Order:      -100,
-		FilterFunc: contextPathStripPrefixGlobalFilter(),
+		Order:      -99,
+		FilterFunc: versionStripPrefixGlobalFilter(),
 	}.Use()
 	sort.Sort(sort.Reverse(globalFilters))
 }
@@ -54,9 +67,14 @@ func (a HandlersChain) Less(i, j int) bool {
 }
 
 
-func initGlobalFilters(router *gin.Engine){
+func initGlobalFilters(routerGroup *gin.RouterGroup){
 	loadGlobalFilters()
 	for _,v:=range globalFilters{
-		router.Use(v.FilterFunc)
+		routerGroup.Use(v.FilterFunc)
 	}
+}
+
+func init() {
+	regexpVersion = regexp.MustCompile(`/v\d/`)
+	globalFilters = make(HandlersChain, 0)
 }

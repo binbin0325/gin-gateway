@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"gin-gateway/pkg/gateway"
 	"github.com/fsnotify/fsnotify"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
@@ -35,8 +36,10 @@ func main() {
 			os.Exit(0)
 		}
 	}()
+	engine:=gin.Default()
+	gateway.InitRouter(engine)
 	info := fmt.Sprintf("%s:%s", "0.0.0.0", *port)
-	gin.Default().Run(info)
+	engine.Run(info)
 
 }
 
