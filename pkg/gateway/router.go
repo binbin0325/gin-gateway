@@ -45,7 +45,7 @@ func InitRouter(router *gin.Engine) {
 	contextPath = viper.GetString("server.router.context_path")
 	routerGroup := router.Group(contextPath)
 	initGlobalFilters(routerGroup)
-	routerMap = loadRouter(getRouters(), routerGroup)
+	loadRouter(getRouters(), routerGroup)
 	ginpprof.Wrap(router)
 
 }
@@ -71,7 +71,7 @@ func getRouters() []*Router {
 	return routers
 }
 
-func loadRouter(routers []*Router, routerGroup *gin.RouterGroup) map[string]*Router {
+func loadRouter(routers []*Router, routerGroup *gin.RouterGroup) {
 	routerMapping := make(map[string]*Router)
 	for _, r := range routers {
 		for _, p := range r.Predicates {
@@ -86,11 +86,12 @@ func loadRouter(routers []*Router, routerGroup *gin.RouterGroup) map[string]*Rou
 			routerGroup.Any(pattern, actuator)
 		}
 	}
-	return routerMapping
+	routerMap = routerMapping
 }
 
 func actuator(c *gin.Context) {
 	for k, v := range routerMap {
+		//todo strings.Contains update
 		if strings.Contains(c.Request.RequestURI, k) {
 			v.proxy(c)
 		}
@@ -99,6 +100,7 @@ func actuator(c *gin.Context) {
 
 func (v *Router) proxy(c *gin.Context) {
 	var host string
+	//todo not lb
 	if v.Type == "lb" {
 		instance := getInstance(v.Uri)
 		host = instance.Ip + ":" + strconv.FormatUint(instance.Port, 10)
@@ -107,7 +109,7 @@ func (v *Router) proxy(c *gin.Context) {
 		req.URL.Scheme = "http"
 		req.URL.Host = host
 		req.URL.Path = c.Request.URL.Path
-		targetQuery:=c.Request.URL.RawQuery
+		targetQuery := c.Request.URL.RawQuery
 		if targetQuery == "" || req.URL.RawQuery == "" {
 			req.URL.RawQuery = targetQuery + req.URL.RawQuery
 		} else {
@@ -131,5 +133,4 @@ func getInstance(uri string) *model.Instance {
 		fmt.Println(err)
 	}
 	return instance
-
 }
