@@ -7,6 +7,10 @@ import (
 	"strings"
 )
 
+type Filters interface {
+	 Use()
+}
+
 type HandlerOrderFunc struct {
 	Order      int64
 	FilterFunc gin.HandlerFunc
