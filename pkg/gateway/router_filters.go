@@ -81,6 +81,7 @@ func getFilterFuncOrder(f *Filter) (int64, gin.HandlerFunc) {
 }
 
 //执行router filter Chain
+//todo index
 func executeRouterFiltersChain(router *Router, c *gin.Context) {
 	//获取对应对router filtersChain
 	index := 0
@@ -93,7 +94,6 @@ func executeRouterFiltersChain(router *Router, c *gin.Context) {
 //测试RouterFilter ,返回值是filter 执行顺序，数值越小 越先执行
 func (filter Filter) TestRouterFilter(key string) (int64,gin.HandlerFunc) {
 	test := func(req *gin.Context)  {
-		fmt.Println("TestRouterFilter")
 	}
 	return -1, test
 }

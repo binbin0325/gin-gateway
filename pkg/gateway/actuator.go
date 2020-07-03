@@ -16,7 +16,7 @@ func actuator(c *gin.Context) {
 	for k, v := range routerMap {
 		//todo strings.Contains update
 		if strings.Contains(c.Request.RequestURI, k) {
-			executeRouterFiltersChain(v,c)
+			executeRouterFiltersChain(v, c)
 			v.proxy(c)
 		}
 	}
@@ -26,8 +26,11 @@ func (v *Router) proxy(c *gin.Context) {
 	var host string
 	//todo not lb
 	if v.Type == "lb" {
-		instance := getInstance(v.Uri)
-		host = instance.Ip + ":" + strconv.FormatUint(instance.Port, 10)
+		if instance := getInstance(v.Uri); instance != nil {
+			host = instance.Ip + ":" + strconv.FormatUint(instance.Port, 10)
+		} else {
+			c.JSON(http.StatusInternalServerError, "not find instance: "+v.Uri)
+		}
 	}
 	director := func(req *http.Request) {
 		req.URL.Scheme = "http"
