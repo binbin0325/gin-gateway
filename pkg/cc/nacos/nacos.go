@@ -29,6 +29,7 @@ type ConfigServer struct {
 	Port     uint64
 	Username string
 	Password string
+	NamespaceId string
 }
 
 var once sync.Once
@@ -52,6 +53,7 @@ func (cs *ConfigServer) initConfigClient() config_client.ConfigClient {
 	}})
 	clientConfig.Password = cs.Password
 	clientConfig.Username = cs.Username
+	clientConfig.NamespaceId= cs.NamespaceId
 	nc.SetClientConfig(clientConfig)
 	nc.SetHttpAgent(&http_agent.HttpAgent{})
 	client, _ := config_client.NewConfigClient(&nc)
